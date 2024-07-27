@@ -1,0 +1,42 @@
+import sys
+from scapy.all import sniff
+
+def handle_packet(packet, log, verbose):
+    
+    log.write(f"Packet: {packet.summary()}\n")
+    log.flush()  
+    if verbose:
+        print(f"Packet: {packet.summary()}")
+
+
+def main(interface, verbose=False):
+    
+    logfile_name = f"sniffer_{interface}_log.txt"
+   
+    with open(logfile_name, 'w') as logfile:
+        logfile.write(f"Starting packet capture on interface: {interface}\n")
+        logfile.flush()  
+        try:
+          
+            sniff(iface=interface, prn=lambda pkt: handle_packet(pkt, logfile, verbose), store=0)
+        except KeyboardInterrupt:
+            print("\nPacket sniffing stopped.")
+            logfile.write("Packet sniffing stopped.\n")
+            logfile.flush() 
+            sys.exit(0)
+        except Exception as e:
+            print(f"An error occurred: {e}")
+            logfile.write(f"An error occurred: {e}\n")
+            logfile.flush()  
+            sys.exit(1)
+
+if __name__ == "__main__":
+   
+    if len(sys.argv) < 2 or len(sys.argv) > 3:
+        print("Usage: python Task5.py <interface> [verbose]")
+        sys.exit(1)
+
+    verbose = len(sys.argv) == 3 and sys.argv[2].lower() == "verbose"
+    
+
+    main(sys.argv[1], verbose)
